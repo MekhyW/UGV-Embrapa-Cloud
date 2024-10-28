@@ -1,0 +1,164 @@
+openapi: 3.0.0
+info:
+  title: Agricultural Robot Control API
+  version: 1.0.0
+  description: API for controlling and monitoring agricultural robots
+
+paths:
+  /robots:
+    get:
+      summary: List all robots
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of robots
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Robot'
+
+  /robots/{robotId}/telemetry:
+    get:
+      summary: Get latest telemetry data
+      parameters:
+        - name: robotId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Latest telemetry data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Telemetry'
+
+  /robots/{robotId}/waypoints:
+    post:
+      summary: Send waypoints to robot
+      parameters:
+        - name: robotId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Waypoints'
+      responses:
+        '202':
+          description: Waypoints accepted
+
+  /robots/{robotId}/command/stop:
+    post:
+      summary: Emergency stop command
+      parameters:
+        - name: robotId
+          in: path
+          required: true
+          schema:
+            type: string
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Stop command sent successfully
+
+  /maps:
+    get:
+      summary: Get available maps
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of available maps
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Map'
+
+components:
+  schemas:
+    Robot:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        status:
+          type: string
+          enum: [IDLE, MOVING, SCANNING, ERROR, EMERGENCY_STOP]
+        lastSeen:
+          type: string
+          format: date-time
+
+    Telemetry:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        position:
+          type: object
+          properties:
+            latitude:
+              type: number
+            longitude:
+              type: number
+            altitude:
+              type: number
+        battery:
+          type: number
+        speed:
+          type: number
+        diagnostics:
+          type: object
+
+    Waypoints:
+      type: object
+      properties:
+        points:
+          type: array
+          items:
+            type: object
+            properties:
+              latitude:
+                type: number
+              longitude:
+                type: number
+              action:
+                type: string
+                enum: [MOVE_TO, SCAN, STOP]
+
+    Map:
+      type: object
+      properties:
+        id:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        url:
+          type: string
+        metadata:
+          type: object
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
