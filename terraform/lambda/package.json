@@ -1,0 +1,7 @@
+{
+  "name": "timestream-writer",
+  "version": "1.0.0",
+  "dependencies": {
+    "@aws-sdk/client-timestream-write": "^3.0.0"
+  }
+}
